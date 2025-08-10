@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.patches import Ellipse
 
 # === Load and prepare object image ===
-img = Image.open("peterbot.png").convert('L').resize((80, 80))
+img = Image.open("sheldon.png").resize((80, 80))
 img_arr = np.array(img)
 
 # === Optical parameters ===
@@ -29,6 +29,7 @@ def draw_scene():
     ax.clear()
     ax.set_xlim(-4, 4)
     ax.set_ylim(-2, 2)
+    ax.invert_yaxis()
     ax.set_aspect('equal')
     ax.set_title("Thin Lens Simulation")
     ax.set_xlabel("x")
@@ -43,7 +44,7 @@ def draw_scene():
     d_o = abs(object_x)
     d_i, M = compute_image_pos(d_o, focal_length)
     image_x = d_i
-    image_y = M * object_y
+    image_y = M * object_yc
 
     # Draw object image
     extent_obj = [object_x - 0.4, object_x + 0.4, object_y - 0.6, object_y + 0.6]
