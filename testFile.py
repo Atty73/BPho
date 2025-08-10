@@ -45,27 +45,28 @@ def moveImage(noPixels, direction, event):
     global picture
     global coordinates
 
-    cut_off = np.array([[[]]])
-
     #Convert picture into numpy array
     pixel_array = np.array(picture)
 
     #Switch statement to deal with moving image, based on direction
     match direction:
         case 0:
+            coordinates[0] -= noPixels
             pixel_array = np.roll(pixel_array, shift=-noPixels, axis=1)
             for i in range(1, noPixels + 1):
                 pixel_array[:, -i] = [255, 255, 255]
-
         case 1:
+            coordinates[1] -= noPixels
             pixel_array = np.roll(pixel_array, shift=-noPixels, axis=0)
             for i in range(1, noPixels + 1):
                 pixel_array[-i] = [255, 255, 255]
         case 2:
+            coordinates[0] += noPixels
             pixel_array = np.roll(pixel_array, shift=noPixels, axis=1)
             for i in range(0, noPixels):
                 pixel_array[:, -i] = [255, 255, 255]
         case 3:
+            coordinates[1] += noPixels
             pixel_array = np.roll(pixel_array, shift=noPixels, axis=0)
             for i in range(0, noPixels):
                 pixel_array[i] = [255, 255, 255]
@@ -113,7 +114,7 @@ window = tk.Tk()
 window.title("Image")
 
 #Create initial image to be displayed in window
-picture = createPILImage("peterbot.png")
+picture = createPILImage("sheldon.png")
 initialImage = invertImage(picture)
 coordinates = [0,0]
 
@@ -124,9 +125,9 @@ image_label.image = img_tk
 image_label.pack()
 
 #Event handling for key presses to move image
-window.bind("<Left>", lambda event:moveImage(20, left, event))
-window.bind("<Right>", lambda event:moveImage(20, right, event))
-window.bind("<Down>", lambda event:moveImage(20, down, event))
-window.bind("<Up>", lambda event:moveImage(20, up, event))
+window.bind("<Left>", lambda event:moveImage(IMAGE_RES//16, left, event))
+window.bind("<Right>", lambda event:moveImage(IMAGE_RES//16, right, event))
+window.bind("<Down>", lambda event:moveImage(IMAGE_RES//16, down, event))
+window.bind("<Up>", lambda event:moveImage(IMAGE_RES//16, up, event))
 
 window.mainloop()

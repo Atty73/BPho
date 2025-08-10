@@ -12,6 +12,15 @@ def linspace(min, max, noDataPoints):
         array[i] = array[i-1] + increment
     return array
 
+def intLinspace(min, max, noDataPoints):
+    array = np.array([0]*noDataPoints,dtype="i")
+    dataRange = max-min
+    increment = dataRange//noDataPoints
+    array[0] = min
+    for i in range(1,noDataPoints):
+        array[i] = array[i-1] + increment
+    return array
+
 
 def linGradMaxY(minX, maxX, maxY, gradient):
     arrayX= np.array([minX,maxX],dtype="f")
