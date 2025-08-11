@@ -1,81 +1,57 @@
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import tkinter as tk
 import io
 
 IMAGE_RES = 256
 
-left = 0
-up = 1
-right = 2
-down = 3
+LEFT = 0
+UP = 1
+RIGHT = 2
+DOWN = 3
+
+coordinates = [0,0]
 
 #Function to mirror image
-def invertImage(PILImage):
+def createInvertedImage(PILImage, ax):
     pixel_array = np.array(PILImage)
-
     height, width, _ = pixel_array.shape
 
     x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
+    x_flat = x_coords.flatten() + coordinates[0]
+    y_flat = y_coords.flatten() + coordinates[1] - IMAGE_RES//2
 
-    x_flat = x_coords.flatten()
-    y_flat = y_coords.flatten()
-    colors = pixel_array.reshape(-1, 3) / 255
+    colours = pixel_array.reshape(-1, 4) / 255
 
     #Negating all x values to flip image
     neg_x_flat = -1*x_flat
 
-    #Plot image correct way around, and the flipped image; y-axis inverted because images mapped from origin at top-left
-    plt.figure(figsize=(16, 8))
-    plt.scatter(x_flat, y_flat, c=colors, marker='s', s=1)
-    plt.scatter(neg_x_flat, y_flat, c=colors, marker='s', s=1)
-    plt.gca().invert_yaxis()
+    #Clear axes, set x and y limits, plot original and inverted image, then invert the y-axis
+    ax.clear()
+    ax.set_xlim(-IMAGE_RES, IMAGE_RES)
+    ax.set_ylim(-IMAGE_RES, IMAGE_RES)
+    ax.scatter(neg_x_flat, y_flat, c=colours, marker='s', s=0.75)
+    ax.scatter(x_flat, y_flat, c=colours, marker='s', s=0.75)
+    ax.invert_yaxis()
 
-    #Save to a buffer in memory
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format='png')
-    plt.close()
-
-    buffer.seek(0)
-    return Image.open(buffer)
-
-#Function to move image
 def moveImage(noPixels, direction, event):
-    global picture
-    global coordinates
-
-    cut_off = np.array([[[]]])
-
-    #Convert picture into numpy array
-    pixel_array = np.array(picture)
-
     #Switch statement to deal with moving image, based on direction
     match direction:
         case 0:
-            pixel_array = np.roll(pixel_array, shift=-noPixels, axis=1)
-            for i in range(1, noPixels + 1):
-                pixel_array[:, -i] = [255, 255, 255]
-
+            if coordinates[0] > -64:
+                coordinates[0] -= noPixels
         case 1:
-            pixel_array = np.roll(pixel_array, shift=-noPixels, axis=0)
-            for i in range(1, noPixels + 1):
-                pixel_array[-i] = [255, 255, 255]
+            coordinates[1] -= noPixels
         case 2:
-            pixel_array = np.roll(pixel_array, shift=noPixels, axis=1)
-            for i in range(0, noPixels):
-                pixel_array[:, -i] = [255, 255, 255]
+            coordinates[0] += noPixels
         case 3:
-            pixel_array = np.roll(pixel_array, shift=noPixels, axis=0)
-            for i in range(0, noPixels):
-                pixel_array[i] = [255, 255, 255]
+            coordinates[1] += noPixels
 
-    #Convert numpy array back into PIL image
-    picture = Image.fromarray(pixel_array)
-
-    #Call invertImage to create matplotlib plot of inverted image against axes and then call updateWindow to display new plot in window
-    invertedImage = invertImage(picture)
-    updateWindow(invertedImage)
+    createInvertedImage(picture, ax)
+    canvas.draw()
 
 #Function to convert png file into a PIL image, then make it smaller
 def createPILImage(picture):
@@ -85,7 +61,7 @@ def createPILImage(picture):
 
     #Create a blank canvas of size of image
     canvas_size = img.size
-    background = Image.new('RGB', canvas_size, 'white')
+    background = Image.new('RGBA', canvas_size, (255,255,255,0))
 
     #Shrink image to be half of original size
     new_size = (img.width // 2, img.height // 2)
@@ -100,33 +76,25 @@ def createPILImage(picture):
 
     return background
 
-#Function to update the image shown in the window
-def updateWindow(PILImage):
-    #Convert PILImage into tkinter image
-    image = ImageTk.PhotoImage(PILImage)
-
-    #Update image in window
-    image_label.config(image=image)
-    image_label.image = image
-
 window = tk.Tk()
 window.title("Image")
 
 #Create initial image to be displayed in window
-picture = createPILImage("peterbot.png")
-initialImage = invertImage(picture)
-coordinates = [0,0]
+picture = createPILImage("sheldon.png")
 
-#Display initial image
-img_tk = ImageTk.PhotoImage(initialImage)
-image_label = tk.Label(window, image=img_tk)
-image_label.image = img_tk
-image_label.pack()
+figure = Figure(figsize=(8,8))
+ax = figure.add_subplot(111)
+
+createInvertedImage(picture, ax)
+
+canvas = FigureCanvasTkAgg(figure, master=window)
+canvas.draw()
+canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 #Event handling for key presses to move image
-window.bind("<Left>", lambda event:moveImage(20, left, event))
-window.bind("<Right>", lambda event:moveImage(20, right, event))
-window.bind("<Down>", lambda event:moveImage(20, down, event))
-window.bind("<Up>", lambda event:moveImage(20, up, event))
+window.bind("<Left>", lambda event:moveImage(IMAGE_RES//16, LEFT, event))
+window.bind("<Right>", lambda event:moveImage(IMAGE_RES//16, RIGHT, event))
+window.bind("<Down>", lambda event:moveImage(IMAGE_RES//16, DOWN, event))
+window.bind("<Up>", lambda event:moveImage(IMAGE_RES//16, UP, event))
 
 window.mainloop()

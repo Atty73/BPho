@@ -18,7 +18,7 @@ def plotImage(PILImage):
 
     colours = pixel_array.reshape(-1, 3) / 255
 
-    ax.scatter(x_flat, y_flat, c=colours, marker='s', s=5)
+    ax.scatter(x_flat, y_flat, c=colours, marker='s', s=1)
     ax.invert_yaxis()
 
 def createPILImage(picture):

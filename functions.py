@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import openpyxl
+from PIL import Image, ImageTk
 
 def linspace(min, max, noDataPoints):
     array = np.array([0]*noDataPoints,dtype="f")
@@ -132,3 +133,25 @@ def plotUncertaintyGradients(filename, sheet, col1, col2, col3, xValues):
 
     plt.plot(firstAndLastX, steepest, c="yellow", marker="o", label="Steepest gradient")
     plt.plot(firstAndLastX, shallowest, c="pink", marker="o", label="Shallowest gradient")
+
+def createPILImage(picture, res):
+    #Convert png into PIL image, and resize to a 1:1 image of IMAGE_RES resolution
+    img = Image.open(picture).convert('RGB')
+    img = img.resize((res, res))
+
+    #Create a blank canvas of size of image
+    canvas_size = img.size
+    background = Image.new('RGB', canvas_size, 'white')
+
+    #Shrink image to be half of original size
+    new_size = (img.width // 2, img.height // 2)
+    shrunken_image = img.resize(new_size, Image.LANCZOS)
+
+    #Centre image in middle of canvas
+    x_offset = (canvas_size[0] - new_size[0]) // 2
+    y_offset = (canvas_size[1] - new_size[1]) // 2
+
+    #Place shrunken image on top of canvas
+    background.paste(shrunken_image, (x_offset, y_offset))
+
+    return background

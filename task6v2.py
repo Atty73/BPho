@@ -4,6 +4,7 @@ import numpy as np
 import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.patches import Ellipse
 
 canvas = None
 ax = None
@@ -26,7 +27,7 @@ def createPILImage(picture):
 
     #Create a blank canvas of size of image
     canvas_size = img.size
-    background = Image.new('RGB', canvas_size, 'white')
+    background = Image.new('RGBA', canvas_size, (255,255,255,0))
 
     #Shrink image to be half of original size
     new_size = (img.width // 2, img.height // 2)
@@ -93,6 +94,8 @@ def moveImage(noPixels, direction, event):
 
     #Call invertImage to create matplotlib plot of inverted image against axes and then call updateWindow to display new plot in window
     createRealInvertedImage(picture, ax)
+    lens = Ellipse(xy=(0, 0), width=25, height=125, linewidth=2, facecolor='none', edgecolor='red')
+    ax.add_patch(lens)
     canvas.draw()
 
 window = tk.Tk()
@@ -104,6 +107,9 @@ figure = Figure(figsize=(8, 8))
 ax = figure.add_subplot(111)
 
 createRealInvertedImage(picture, ax)
+
+lens = Ellipse(xy=(0,0), width=25, height=125, linewidth=2, facecolor = 'none', edgecolor = 'red')
+ax.add_patch(lens)
 
 canvas = FigureCanvasTkAgg(figure, master=window)
 canvas.draw()

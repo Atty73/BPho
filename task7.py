@@ -4,17 +4,20 @@ import numpy as np
 import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.patches import Ellipse
 
 canvas = None
 ax = None
 
 IMAGE_RES = 256
-f = IMAGE_RES // 3
+f = IMAGE_RES * 4
 
 LEFT = 0
 UP = 1
 RIGHT = 2
 DOWN = 3
+
+coordinates = [0,0]
 
 #Function to convert png file into a PIL image, then make it smaller
 def createPILImage(picture):
@@ -24,7 +27,7 @@ def createPILImage(picture):
 
     #Create a blank canvas of size of image
     canvas_size = img.size
-    background = Image.new('RGB', canvas_size, 'white')
+    background = Image.new('RGBA', canvas_size, (255,255,255,0))
 
     #Shrink image to be half of original size
     new_size = (img.width // 2, img.height // 2)
@@ -42,8 +45,7 @@ def createPILImage(picture):
 #Function to calculate new X coordinate
 def calcNewX(x):
     denominator = x-f
-    newX = (f/denominator)*x
-    print(newX)
+    newX = abs((f/denominator)*x)
     return newX
 
 #Function to calculate new Y coordinate
@@ -56,8 +58,8 @@ def createVirtualEnlargedImage(PILImage, ax):
     height, width, _ = pixel_array.shape
 
     x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
-    x_flat = x_coords.flatten()
-    y_flat = y_coords.flatten()
+    x_flat = x_coords.flatten() + coordinates[0] + IMAGE_RES
+    y_flat = y_coords.flatten() + coordinates[1] - IMAGE_RES // 2
 
     new_x_flat = x_flat.copy()
     new_y_flat = y_flat.copy()
@@ -69,49 +71,33 @@ def createVirtualEnlargedImage(PILImage, ax):
             new_x_flat[i] = calcNewX(x_flat[i])
             new_y_flat[i] = calcNewY(x_flat[i], y_flat[i], new_x_flat[i])
 
-    colours = new_pixel_array.reshape(-1, 3) / 255
+    colours = new_pixel_array.reshape(-1, 4) / 255
 
     ax.clear()
-    ax.set_xlim(-2 * IMAGE_RES, IMAGE_RES)
-    ax.set_ylim(-2 * IMAGE_RES, IMAGE_RES)
-    ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=400)
+    ax.set_xlim(-2 * IMAGE_RES, IMAGE_RES*3)
+    ax.set_ylim(-2 * IMAGE_RES, IMAGE_RES*3)
+    ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=1)
     ax.scatter(x_flat, y_flat, c=colours, marker='s', s=1)
     ax.invert_yaxis()
 
 def moveImage(noPixels, direction, event):
-    global picture, coordinates, ax, canvas
-
-    #Convert picture into numpy array
-    pixel_array = np.array(picture)
-
     #Switch statement to deal with moving image, based on direction
     match direction:
         case 0:
             coordinates[0] -= noPixels
-            pixel_array = np.roll(pixel_array, shift=-noPixels, axis=1)
-            for i in range(1, noPixels + 1):
-                pixel_array[:, -i] = [255, 255, 255]
         case 1:
             coordinates[1] -= noPixels
-            pixel_array = np.roll(pixel_array, shift=-noPixels, axis=0)
-            for i in range(1, noPixels + 1):
-                pixel_array[-i] = [255, 255, 255]
         case 2:
             coordinates[0] += noPixels
-            pixel_array = np.roll(pixel_array, shift=noPixels, axis=1)
-            for i in range(0, noPixels):
-                pixel_array[:, -i] = [255, 255, 255]
         case 3:
             coordinates[1] += noPixels
-            pixel_array = np.roll(pixel_array, shift=noPixels, axis=0)
-            for i in range(0, noPixels):
-                pixel_array[i] = [255, 255, 255]
-
-    #Convert numpy array back into PIL image
-    picture = Image.fromarray(pixel_array)
 
     #Call invertImage to create matplotlib plot of inverted image against axes and then call updateWindow to display new plot in window
     createVirtualEnlargedImage(picture, ax)
+
+    lens = Ellipse(xy=(0, 0), width=25, height=125, linewidth=2, facecolor='none', edgecolor='red')
+    ax.add_patch(lens)
+
     canvas.draw()
 
 window = tk.Tk()
@@ -124,11 +110,12 @@ ax = figure.add_subplot(111)
 
 createVirtualEnlargedImage(picture, ax)
 
+lens = Ellipse(xy=(0, 0), width=25, height=125, linewidth=2, facecolor='none', edgecolor='red')
+ax.add_patch(lens)
+
 canvas = FigureCanvasTkAgg(figure, master=window)
 canvas.draw()
 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-coordinates = [0,0]
 
 #Event handling for key presses to move image
 window.bind("<Left>", lambda event:moveImage(IMAGE_RES//16, LEFT, event))

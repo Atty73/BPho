@@ -16,6 +16,8 @@ UP = 1
 RIGHT = 2
 DOWN = 3
 
+coordinates = [0,0]
+
 #Function to convert png file into a PIL image, then make it smaller
 def createPILImage(picture):
     #Convert png into PIL image, and resize to a 1:1 image of IMAGE_RES resolution
@@ -24,7 +26,7 @@ def createPILImage(picture):
 
     #Create a blank canvas of size of image
     canvas_size = img.size
-    background = Image.new('RGB', canvas_size, 'white')
+    background = Image.new('RGBA', canvas_size, (255,255,255,0))
 
     #Shrink image to be half of original size
     new_size = (img.width // 2, img.height // 2)
@@ -60,8 +62,8 @@ def createRealConcaveMirrorImage(PILImage, ax):
     height, width, _ = pixel_array.shape
 
     x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
-    x_flat = x_coords.flatten()
-    y_flat = y_coords.flatten()
+    x_flat = x_coords.flatten() + coordinates[0]
+    y_flat = y_coords.flatten() + coordinates[1]
 
     new_x_flat = x_flat.copy()
     new_y_flat = y_flat.copy()
@@ -79,7 +81,7 @@ def createRealConcaveMirrorImage(PILImage, ax):
                 new_x_flat[i] = X
                 new_y_flat[i] = Y
 
-    colours = new_pixel_array.reshape(-1, 3) / 255
+    colours = new_pixel_array.reshape(-1, 4) / 255
 
     ax.clear()
     ax.set_xlim(-IMAGE_RES, IMAGE_RES*2)
@@ -89,36 +91,16 @@ def createRealConcaveMirrorImage(PILImage, ax):
     ax.invert_yaxis()
 
 def moveImage(noPixels, direction, event):
-    global picture, coordinates, ax, canvas
-
-    #Convert picture into numpy array
-    pixel_array = np.array(picture)
-
     #Switch statement to deal with moving image, based on direction
     match direction:
         case 0:
             coordinates[0] -= noPixels
-            pixel_array = np.roll(pixel_array, shift=-noPixels, axis=1)
-            for i in range(1, noPixels + 1):
-                pixel_array[:, -i] = [255, 255, 255]
         case 1:
             coordinates[1] -= noPixels
-            pixel_array = np.roll(pixel_array, shift=-noPixels, axis=0)
-            for i in range(1, noPixels + 1):
-                pixel_array[-i] = [255, 255, 255]
         case 2:
             coordinates[0] += noPixels
-            pixel_array = np.roll(pixel_array, shift=noPixels, axis=1)
-            for i in range(0, noPixels):
-                pixel_array[:, -i] = [255, 255, 255]
         case 3:
             coordinates[1] += noPixels
-            pixel_array = np.roll(pixel_array, shift=noPixels, axis=0)
-            for i in range(0, noPixels):
-                pixel_array[i] = [255, 255, 255]
-
-    #Convert numpy array back into PIL image
-    picture = Image.fromarray(pixel_array)
 
     #Call invertImage to create matplotlib plot of inverted image against axes and then call updateWindow to display new plot in window
     createRealConcaveMirrorImage(picture, ax)
@@ -137,8 +119,6 @@ createRealConcaveMirrorImage(picture, ax)
 canvas = FigureCanvasTkAgg(figure, master=window)
 canvas.draw()
 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-coordinates = [0,0]
 
 #Event handling for key presses to move image
 window.bind("<Left>", lambda event:moveImage(IMAGE_RES//16, LEFT, event))
