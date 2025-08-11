@@ -9,14 +9,12 @@ canvas = None
 ax = None
 
 IMAGE_RES = 256
-f = IMAGE_RES // 5
+f = IMAGE_RES // 3
 
 LEFT = 0
 UP = 1
 RIGHT = 2
 DOWN = 3
-
-coordinates = [0,0]
 
 #Function to convert png file into a PIL image, then make it smaller
 def createPILImage(picture):
@@ -44,7 +42,8 @@ def createPILImage(picture):
 #Function to calculate new X coordinate
 def calcNewX(x):
     denominator = x-f
-    newX = -(f/denominator)*x
+    newX = (f/denominator)*x
+    print(newX)
     return newX
 
 #Function to calculate new Y coordinate
@@ -52,13 +51,18 @@ def calcNewY(x, y, X):
     newY = (y/x)*X
     return newY
 
-def createRealInvertedImage(PILImage, ax):
+def createVirtualEnlargedImage(PILImage, ax):
     pixel_array = np.array(PILImage)
     height, width, _ = pixel_array.shape
 
     x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
-    x_flat = x_coords.flatten() + coordinates[0]
-    y_flat = y_coords.flatten() + coordinates[1]
+
+    x_obj = np.linspace(-width / 2 + IMAGE_RES / 4, width / 2 + IMAGE_RES / 4, width)
+    y_obj = np.linspace(-height / 2, height / 2, height)
+    x_coords, y_coords = np.meshgrid(x_obj, y_obj)
+
+    x_flat = x_coords.flatten()
+    y_flat = y_coords.flatten()
 
     new_x_flat = x_flat.copy()
     new_y_flat = y_flat.copy()
@@ -66,7 +70,7 @@ def createRealInvertedImage(PILImage, ax):
     new_pixel_array = pixel_array.copy()
 
     for i in range(len(x_flat)):
-        if x_flat[i]>f:
+        if 0 < x_flat[i] < f:
             new_x_flat[i] = calcNewX(x_flat[i])
             new_y_flat[i] = calcNewY(x_flat[i], y_flat[i], new_x_flat[i])
 
@@ -80,19 +84,39 @@ def createRealInvertedImage(PILImage, ax):
     ax.invert_yaxis()
 
 def moveImage(noPixels, direction, event):
+    global picture, coordinates, ax, canvas
+
+    #Convert picture into numpy array
+    pixel_array = np.array(picture)
+
     #Switch statement to deal with moving image, based on direction
     match direction:
         case 0:
             coordinates[0] -= noPixels
+            pixel_array = np.roll(pixel_array, shift=-noPixels, axis=1)
+            for i in range(1, noPixels + 1):
+                pixel_array[:, -i] = [255, 255, 255]
         case 1:
             coordinates[1] -= noPixels
+            pixel_array = np.roll(pixel_array, shift=-noPixels, axis=0)
+            for i in range(1, noPixels + 1):
+                pixel_array[-i] = [255, 255, 255]
         case 2:
             coordinates[0] += noPixels
+            pixel_array = np.roll(pixel_array, shift=noPixels, axis=1)
+            for i in range(0, noPixels):
+                pixel_array[:, -i] = [255, 255, 255]
         case 3:
             coordinates[1] += noPixels
+            pixel_array = np.roll(pixel_array, shift=noPixels, axis=0)
+            for i in range(0, noPixels):
+                pixel_array[i] = [255, 255, 255]
+
+    #Convert numpy array back into PIL image
+    picture = Image.fromarray(pixel_array)
 
     #Call invertImage to create matplotlib plot of inverted image against axes and then call updateWindow to display new plot in window
-    createRealInvertedImage(picture, ax)
+    createVirtualEnlargedImage(picture, ax)
     canvas.draw()
 
 window = tk.Tk()
@@ -103,11 +127,13 @@ picture = createPILImage("sheldon.png")
 figure = Figure(figsize=(8, 8))
 ax = figure.add_subplot(111)
 
-createRealInvertedImage(picture, ax)
+createVirtualEnlargedImage(picture, ax)
 
 canvas = FigureCanvasTkAgg(figure, master=window)
 canvas.draw()
 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+coordinates = [0,0]
 
 #Event handling for key presses to move image
 window.bind("<Left>", lambda event:moveImage(IMAGE_RES//16, LEFT, event))
