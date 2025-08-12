@@ -9,7 +9,7 @@ canvas = None
 ax = None
 
 IMAGE_RES = 256
-R = 50
+R = 90
 
 LEFT = 0
 UP = 1
@@ -62,7 +62,7 @@ def createVirtualConvexMirrorImage(PILImage, ax):
 
     x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
     x_flat = x_coords.flatten() + coordinates[0] + 64
-    y_flat = y_coords.flatten() + coordinates[1] - 128
+    y_flat = -(y_coords.flatten() + coordinates[1] - 128)
 
     new_x_flat = x_flat.copy()
     new_y_flat = y_flat.copy()
@@ -90,7 +90,6 @@ def createVirtualConvexMirrorImage(PILImage, ax):
     ax.set_axisbelow(True)
     ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=1)
     ax.scatter(x_flat, y_flat, c=colours, marker='s', s=1)
-    ax.invert_yaxis()
 
 def moveImage(noPixels, direction, event):
     #Switch statement to deal with moving image, based on direction
@@ -113,7 +112,7 @@ window.title("Thin Lens Simulation")
 
 picture = createPILImage("sheldon.png")
 
-figure = Figure(figsize=(8, 8))
+figure = Figure(figsize=(8, 4))
 ax = figure.add_subplot(111)
 
 createVirtualConvexMirrorImage(picture, ax)

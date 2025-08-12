@@ -59,7 +59,7 @@ def createVirtualEnlargedImage(PILImage, ax):
 
     x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
     x_flat = x_coords.flatten() + coordinates[0] + IMAGE_RES
-    y_flat = y_coords.flatten() + coordinates[1] - IMAGE_RES // 2
+    y_flat = -(y_coords.flatten() + coordinates[1] - IMAGE_RES // 2)
 
     new_x_flat = x_flat.copy()
     new_y_flat = y_flat.copy()
@@ -74,13 +74,12 @@ def createVirtualEnlargedImage(PILImage, ax):
     colours = new_pixel_array.reshape(-1, 4) / 255
 
     ax.clear()
-    ax.set_xlim(-2 * IMAGE_RES, IMAGE_RES*3)
-    ax.set_ylim(-2 * IMAGE_RES, IMAGE_RES*3)
+    ax.set_xlim(-IMAGE_RES, IMAGE_RES*4)
+    ax.set_ylim(-IMAGE_RES, IMAGE_RES)
     ax.grid(True, alpha=0.6)
     ax.set_axisbelow(True)
-    ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=1)
+    ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=5)
     ax.scatter(x_flat, y_flat, c=colours, marker='s', s=1)
-    ax.invert_yaxis()
 
 def moveImage(noPixels, direction, event):
     #Switch statement to deal with moving image, based on direction
@@ -107,7 +106,7 @@ window.title("Thin Lens Simulation")
 
 picture = createPILImage("sheldon.png")
 
-figure = Figure(figsize=(8, 8))
+figure = Figure(figsize=(16, 6.4))
 ax = figure.add_subplot(111)
 
 createVirtualEnlargedImage(picture, ax)
