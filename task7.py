@@ -76,6 +76,8 @@ def createVirtualEnlargedImage(PILImage, ax):
     ax.clear()
     ax.set_xlim(-2 * IMAGE_RES, IMAGE_RES*3)
     ax.set_ylim(-2 * IMAGE_RES, IMAGE_RES*3)
+    ax.grid(True, alpha=0.6)
+    ax.set_axisbelow(True)
     ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=1)
     ax.scatter(x_flat, y_flat, c=colours, marker='s', s=1)
     ax.invert_yaxis()

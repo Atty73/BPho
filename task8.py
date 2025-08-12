@@ -45,12 +45,12 @@ def createPILImage(picture):
 def calcNewX(x, y, m):
     denominator = (y/x)+m
     numerator = m * np.sqrt(R**2-y**2) - y
-    newX = numerator/denominator
+    newX = -numerator/denominator
     return newX
 
 #Function to calculate new Y coordinate
 def calcNewY(x, y, X):
-    newY = -(y/x) * X
+    newY = (y/x) * X
     return newY
 
 def calcTheta(x, y):
@@ -63,7 +63,7 @@ def createRealConcaveMirrorImage(PILImage, ax):
 
     x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
     x_flat = x_coords.flatten() + coordinates[0]
-    y_flat = y_coords.flatten() + coordinates[1]
+    y_flat = -(y_coords.flatten() + coordinates[1] - 200)
 
     new_x_flat = x_flat.copy()
     new_y_flat = y_flat.copy()
@@ -77,18 +77,19 @@ def createRealConcaveMirrorImage(PILImage, ax):
             if y_flat[i]/x_flat[i] != m:
                 X = calcNewX(x_flat[i], y_flat[i], m)
                 Y = calcNewY(x_flat[i], y_flat[i], X)
-                print(X,Y)
                 new_x_flat[i] = X
                 new_y_flat[i] = Y
 
     colours = new_pixel_array.reshape(-1, 4) / 255
 
     ax.clear()
-    ax.set_xlim(-IMAGE_RES, IMAGE_RES*2)
+    ax.set_xlim(-IMAGE_RES, IMAGE_RES)
     ax.set_ylim(-IMAGE_RES, IMAGE_RES)
-    ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=400)
+    ax.grid(True, alpha=0.6)
+    ax.set_axisbelow(True)
+    ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=1)
     ax.scatter(x_flat, y_flat, c=colours, marker='s', s=1)
-    ax.invert_yaxis()
+
 
 def moveImage(noPixels, direction, event):
     #Switch statement to deal with moving image, based on direction

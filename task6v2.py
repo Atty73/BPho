@@ -76,6 +76,8 @@ def createRealInvertedImage(PILImage, ax):
     ax.clear()
     ax.set_xlim(-2 * IMAGE_RES, IMAGE_RES)
     ax.set_ylim(-2 * IMAGE_RES, IMAGE_RES)
+    ax.grid(True, alpha=0.6)
+    ax.set_axisbelow(True)
     ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=400)
     ax.scatter(x_flat, y_flat, c=colours, marker='s', s=1)
     ax.invert_yaxis()

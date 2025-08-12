@@ -9,7 +9,7 @@ canvas = None
 ax = None
 
 IMAGE_RES = 256
-R = 200
+R = 50
 
 LEFT = 0
 UP = 1
@@ -61,8 +61,8 @@ def createVirtualConvexMirrorImage(PILImage, ax):
     height, width, _ = pixel_array.shape
 
     x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
-    x_flat = x_coords.flatten() + coordinates[0]
-    y_flat = y_coords.flatten() + coordinates[1] -128
+    x_flat = x_coords.flatten() + coordinates[0] + 64
+    y_flat = y_coords.flatten() + coordinates[1] - 128
 
     new_x_flat = x_flat.copy()
     new_y_flat = y_flat.copy()
@@ -84,9 +84,11 @@ def createVirtualConvexMirrorImage(PILImage, ax):
     colours = new_pixel_array.reshape(-1, 4) / 255
 
     ax.clear()
-    ax.set_xlim(-IMAGE_RES, IMAGE_RES)
-    ax.set_ylim(-IMAGE_RES, IMAGE_RES)
-    ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=400)
+    ax.set_xlim(0, IMAGE_RES*2)
+    ax.set_ylim(-IMAGE_RES/2, IMAGE_RES/2)
+    ax.grid(True, alpha=0.6)
+    ax.set_axisbelow(True)
+    ax.scatter(new_x_flat, new_y_flat, c=colours, marker='s', s=1)
     ax.scatter(x_flat, y_flat, c=colours, marker='s', s=1)
     ax.invert_yaxis()
 
