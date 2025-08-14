@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import functions as f
 import math
 
-#function for Sellmeier's Equation
+#Function for Sellmeier's Equation
 def Sellmeier(wavelength):
     wavelengthMicro = wavelength/1000
+
+    #Sellmeier coefficients
     a = [1.03961212, 0.231792344, 1.01146945]
     b = [0.00600069867, 0.0200179144, 103.560653]
     sum = 0

@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import functions as f
 import math
 
@@ -21,5 +20,10 @@ def fermat(xArray):
 xArray = f.linspace(0,2,600)
 tArray = fermat(xArray)
 
-plt.plot(xArray, tArray, color='red', linewidth=2)
+plt.plot(xArray, tArray, color='blue', linewidth=2)
+plt.scatter(1,tArray[len(tArray)//2], marker='*', color='red',zorder=2)
+plt.xlabel("x / m")
+plt.ylabel("t / s")
+plt.text(1,1.06e-8,f"L = {L}m")
+plt.grid(True)
 plt.show()

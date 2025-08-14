@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import functions as f
 import math
 
@@ -8,13 +7,11 @@ def refIndexWater(freq):
     freqHz = freq * 10**12
     RHS = 1.731 - 0.261*((freqHz/(10**15))**2)
     n = math.sqrt(1 + math.sqrt(1/RHS))
-    print(n)
     return n
 
 #Defining array of frequencies
 frequencies = f.linspace(405, 791, 1544)
 print(frequencies)
-#nValues = []
 
 for i in range(len(frequencies)):
     colour = (0,0,0)
@@ -40,12 +37,6 @@ for i in range(len(frequencies)):
         colour = (y, 0, 1)
 
     plt.plot(frequencies[i], refIndexWater(frequencies[i]), marker='o', color=colour, markersize=1)
-
-#Calculating index for each frequency
-#for frequency in frequencies:
-    #nValues.append(refIndexWater(frequency))
-
-#plt.plot(frequencies, nValues,'b-o',ms=1)
 
 plt.xlabel("Frequency / THz")
 plt.ylabel("n")

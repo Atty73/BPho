@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import functions as f
-import math
 
 #Percentage difference function
 def percentageDifference(experimental, actual):
@@ -29,10 +27,10 @@ m, c = np.polyfit(recipUArray,recipVArray,1)
 #Plotting line of best fit and experimental data points
 plt.plot(recipUArray, m*recipUArray+c, 'b-o', ms=1)
 plt.scatter(recipUArray, recipVArray, c="red", marker="+", s=30)
+plt.xlabel("1/u")
+plt.ylabel("1/v")
+plt.title("Thin lens")
+plt.text(0.028, 0.045, f"Gradient: {m} \nPercentage Difference: {percentageDifference(m, -1)}%")
 
 plt.show()
-
-print(f"Gradient: {m}")
-print(f"Y-Intercept: {c}")
-print(f"Percentage Difference: {percentageDifference(m, -1)}%")
 
